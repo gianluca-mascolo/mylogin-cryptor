@@ -3,14 +3,18 @@
 set -euo pipefail
 
 _gethelp() {
-    echo "Usage: $0 [-f MYLOGIN_FILE]"
+    echo "Usage: $0 [-f MYLOGIN_FILE] [-p PLAINTEXT_FILE] [-y]"
     cat << EOF
 Encrypt a plain text file for mysql credentials.
-mylogin.cnf location may be speficied with -f or with MYSQL_TEST_LOGIN_FILE environment variable. Default location: ~/.mylogin.cnf
+
+mylogin.cnf location may be specified with -f or with MYSQL_TEST_LOGIN_FILE environment variable. Default location: ~/.mylogin.cnf
+Use -p to select a plaintext file. Default: standard input
+Use -y to force overwrite MYLOGIN_FILE. Default: ask
+
 EOF
 }
 
-while getopts "hf:p:" Option
+while getopts "hyf:p:" Option
 do
     case $Option in
         f)
@@ -18,6 +22,9 @@ do
         ;;
         p)
             PLAINTEXT_FILE="$OPTARG"
+        ;;
+        y)
+            OVERWRITE_MYLOGIN="overwrite"
         ;;
         h)
             _gethelp
@@ -33,7 +40,7 @@ shift $((OPTIND - 1))
 
 [ "${MYLOGIN_FILE:+is_set}" = "is_set" ] || MYLOGIN_FILE="${MYSQL_TEST_LOGIN_FILE:-$HOME/.mylogin.cnf}"
 KeyPress="x"
-if [ -f "$MYLOGIN_FILE" ]; then {
+if [ -f "$MYLOGIN_FILE" ] && [ "${OVERWRITE_MYLOGIN:-n}" != "overwrite" ]; then {
     read -p "$MYLOGIN_FILE already exist. Do you want to overwrite it? (y/n)" -s -n1 -t10 KeyPress
     [ "$KeyPress" != "y" ] && exit 0
     echo ""
