@@ -20,7 +20,7 @@ decode_key() {
     local i
     MYLOGIN_FILE="$1"
     i=0
-    for BYTE in $(od  -j4  -N20 -An -td1 -w1 -v "$MYLOGIN_FILE" | grep -oE '[0-9]+'); do {
+    for BYTE in $(od -j4  -N20 -An -tu1 -w1 -v "$MYLOGIN_FILE" | grep -oE '[0-9]+'); do {
         HEX_KEY[$((i%16))]=$((${HEX_KEY[$((i%16))]:-0}^BYTE))
         i=$((i+1))
     }
@@ -52,10 +52,9 @@ MYLOGIN_BYTE_LEN="$(stat --format=%s "$MYLOGIN_FILE")"
 if [ "$MYLOGIN_BYTE_LEN" -le 24 ]; then echo "ERROR: $MYLOGIN_FILE bad format"; _gethelp; exit 1; fi
 
 OPENSSL_KEY="$(decode_key "$MYLOGIN_FILE")"
-
 NEXT_BYTE=24
 while ((NEXT_BYTE<MYLOGIN_BYTE_LEN)); do {
-    READ_LEN="$(od  -j${NEXT_BYTE} -N1 -An -td1 -w1 -v "$MYLOGIN_FILE" | grep -oE '[0-9]+')"
+    READ_LEN="$(od -j${NEXT_BYTE} -N1 -An -tu1 -w1 -v "$MYLOGIN_FILE" | grep -oE '[0-9]+')"
     dd status=none ibs=1 skip=$((NEXT_BYTE+4)) obs=1 count=$((READ_LEN)) if="$MYLOGIN_FILE" | \
         openssl enc -d -aes-128-ecb -K "$OPENSSL_KEY"
     NEXT_BYTE=$((NEXT_BYTE+READ_LEN+4))
