@@ -1,5 +1,5 @@
 # mylogin-cryptor
-Encode/Decode mylogin.cnf
+Encode/Decode mylogin.cnf with bash
 
 ## Example
 
