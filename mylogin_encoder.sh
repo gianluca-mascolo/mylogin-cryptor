@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# od tr printf (package: coreutils)
+# openssl (package: openssl)
+
 set -euo pipefail
 
 _gethelp() {
